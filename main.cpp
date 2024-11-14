@@ -35,6 +35,9 @@ class histogram{
         N = int(x_max/err); //err - требуемая max ошибка округления при заполнении гистограммы. Из него получаем N.
         data = new int[N];
     };
+    ~histogram(){
+        delete[] data;
+    };
 
     void setX_max(double a){x_max = a;};
     void setN(int a){N = a;};
