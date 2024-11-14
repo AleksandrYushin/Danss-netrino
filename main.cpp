@@ -2,6 +2,7 @@
 //#include <vector>
 #include <iostream>
 #include <random>
+#include <fstream>
 
 //Функтор возращающий растояние между точкой детектора (x,y,z) и точкой реактора (r, fi, h)
 class distance{
@@ -57,53 +58,61 @@ class histogram{
 
 int main(){
     //Создаём наш функтор и распределение
-    distance dist = distance(100.0, 0.0);
-    histogram F = histogram(150.0, 150);  
+    distance dist = distance(30.0, 0.0);
+    histogram F = histogram(60.0, 0.1);  
 
     double H = 10;
     double R = 10;
     double a = 20;
     
-    //В тупую считаем распределение перебирая все точки
-    double err = 0.1;   //шаг сетки
-    int H_max = int(H/err);
-    int R_max = int(R/err);
-    int a_max = int(a/err);
+    // //В тупую считаем распределение перебирая все точки
+    // double err = 0.1;   //шаг сетки
+    // int H_max = int(H/err);
+    // int R_max = int(R/err);
+    // int a_max = int(a/err);
 
-    for (int i_z = 0; i_z<= a_max; i_z++){
-        for (int i_y = -a_max/2; i_y<= a_max/2; i_y++){
-            for (int i_x = -a_max/2; i_x <= a_max/2; i_x++){
-                for (int i_r = 0; i_r<= R_max; i_r++){
-                    for (int i_fi = 0; i_fi< int(2*M_PI/err); i_fi++){
-                        for (int i_h = 0; i_h<= H_max; i_h++){
-                            F.push_point(dist(i_x, i_y, i_z, i_r, i_fi, i_h));    
-                        };
-                    };
-                };
-            };
-        };
-    };
+    // for (int i_z = 0; i_z<= a_max; i_z++){
+    //     for (int i_y = -a_max/2; i_y<= a_max/2; i_y++){
+    //         for (int i_x = -a_max/2; i_x <= a_max/2; i_x++){
+    //             for (int i_r = 0; i_r<= R_max; i_r++){
+    //                 for (int i_fi = 0; i_fi< int(2*M_PI/err); i_fi++){
+    //                     for (int i_h = 0; i_h<= H_max; i_h++){
+    //                         F.push_point(dist(i_x, i_y, i_z, i_r, i_fi, i_h));    
+    //                     };
+    //                 };
+    //             };
+    //         };
+    //     };
+    // };
 
     //Метод Монте-Карло - перебираем только часть точек
-    
-    //Создаём ГПЧ
-    std::mt19937 engine;
-    std::random_device device;
-    engine.seed(device());
+    std::uniform_real_distribution<double> unif(0,1);   //ГПСЧ
+    std::default_random_engine re;
 
     /*Математика: вопрос в том, что мы считаем равномерным распределением. Варианты:
         1) равномерно по r и fi (тогда в центре "плотнее")
         2) равномерно по площадям (т.е. для любого интегрирования по равновеликим фигурам даёт одно и тоже число) => равномерно по fi и r^2/2 (так как ds=rdr* dfi)
     Я склонен выбирать второй вариант*/ 
 
-    
+    for (int i = 0; i< 100000; i++){
+        double r_x = unif(re)*a - a/2;
+        double r_y = unif(re)*a - a/2;
+        double r_z = unif(re)*a;
+        double r_r = std::sqrt(unif(re)*R*R);
+        double r_fi = unif(re)*2*M_PI;
+        double r_h = unif(re)*H;
 
+        F.push_point(dist(r_x, r_y, r_z, r_r, r_fi, r_h));  
+    };
 
     //Вывод результата
+    std::ofstream f;
+    f.open("Data");
     int * data = F.gatData();
-    for (int i =0 ; i<= F.getN(); i++){
-        std::cout << data[i] << std::endl;
+    for (int i =0 ; i< F.getN(); i++){
+        f << data[i] << std::endl;
     };
+    f.close();
 
     return 1;
 };
