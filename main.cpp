@@ -74,9 +74,9 @@ void BruteForceMethod(double delita, distance* dist, histogram* F, double H, dou
         for (int i_y = -a_max/2; i_y<= a_max/2; i_y++){
             for (int i_x = -a_max/2; i_x <= a_max/2; i_x++){
                 for (int i_r = 0; i_r<= R_max; i_r++){
-                    for (int i_fi = 0; i_fi< int(2*M_PI/delita); i_fi++){
+                    for (int i_phi = 0; i_phi< int(2*M_PI/delita); i_phi++){
                         for (int i_h = 0; i_h<= H_max; i_h++){
-                            F->push_point(dist->operator()(i_x, i_y, i_z, i_r, i_fi, i_h));    
+                            F->push_point(dist->operator()(i_x, i_y, i_z, i_r, i_phi, i_h));    
                         };
                     };
                 };
@@ -110,10 +110,10 @@ int main(){
         double r_y = unif(re)*a - a/2;
         double r_z = unif(re)*a;
         double r_r = std::sqrt(unif(re)*R*R);
-        double r_fi = unif(re)*2*M_PI;
+        double r_phi = unif(re)*2*M_PI;
         double r_h = unif(re)*H;
 
-        F.push_point(dist(r_x, r_y, r_z, r_r, r_fi, r_h));  
+        F.push_point(dist(r_x, r_y, r_z, r_r, r_phi, r_h));  
     };
 
     //Вывод результата
