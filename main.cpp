@@ -4,7 +4,10 @@
 #include <random>
 #include <fstream>
 
-//Функтор возращающий растояние между точкой детектора (x,y,z) и точкой реактора (r, fi, h)
+//Функтор возращающий растояние между точкой детектора (x,y,z) и точкой реактора (r, phi, h)
+/*Модель: реактор - цилиндр с высотой H и радиусом R (координаты точки - цилиндрические от центра основания)
+          детектор - куб с длиной ребра a (координаты точки - декартовы от центра основания)
+Взаимное расположение: куб и цилиндр стоят на одной плоскости. L - растояие между центрами фигур, theta - угол поворота куба вокруг своей оси (т.е. угл между прямой соед. центры фигур и нормалью грани)*/
 class distance{
     public:
     distance(double L, double theta): L(L), theta(theta) {};
@@ -15,19 +18,21 @@ class distance{
     double getL(){return L;};
     double getTheta(){return theta;};
 
-    double operator()(double x, double y, double z, double r, double fi, double h){
-        return std::sqrt(std::pow(L-r*std::cos(fi)-y*std::cos(theta) + x*std::sin(theta), 2)+ std::pow(r*std::sin(fi)+x*std::cos(theta)+y*std::sin(theta), 2)+ std::pow(z-h, 2));
+    double operator()(double x, double y, double z, double r, double phi, double h){
+        return std::sqrt(std::pow(L-r*std::cos(phi)-y*std::cos(theta) + x*std::sin(theta), 2)+ std::pow(r*std::sin(phi)+x*std::cos(theta)+y*std::sin(theta), 2)+ std::pow(z-h, 2));
     };
     private:
     double L;
     double theta;
 };
 
+
+// Класс гистограммы. x_max - верхяя граница интервала значений (x_min = 0 по умолчанию), N - число бинов.
 class histogram{
     public:
     histogram(double x_max, int N): x_max(x_max), N(N) {data = new int[N];};
     histogram(double x_max, double err): x_max(x_max) {
-        N = int(x_max/err);
+        N = int(x_max/err); //err - требуемая max ошибка округления при заполнении гистограммы. Из него получаем N.
         data = new int[N];
     };
 
@@ -56,6 +61,27 @@ class histogram{
     int *data;
 };
 
+void BruteForceMethod(double delita, distance* dist, histogram* F, double H, double R, double a){
+    //В тупую считаем распределение перебирая все точки
+    int H_max = int(H/delita);
+    int R_max = int(R/delita);
+    int a_max = int(a/delita);
+
+    for (int i_z = 0; i_z<= a_max; i_z++){
+        for (int i_y = -a_max/2; i_y<= a_max/2; i_y++){
+            for (int i_x = -a_max/2; i_x <= a_max/2; i_x++){
+                for (int i_r = 0; i_r<= R_max; i_r++){
+                    for (int i_fi = 0; i_fi< int(2*M_PI/delita); i_fi++){
+                        for (int i_h = 0; i_h<= H_max; i_h++){
+                            F->push_point(dist->operator()(i_x, i_y, i_z, i_r, i_fi, i_h));    
+                        };
+                    };
+                };
+            };
+        };
+    };
+};
+
 int main(){
     //Создаём наш функтор и распределение
     distance dist = distance(30.0, 0.0);
@@ -64,26 +90,8 @@ int main(){
     double H = 10;
     double R = 10;
     double a = 20;
-    
-    // //В тупую считаем распределение перебирая все точки
-    // double err = 0.1;   //шаг сетки
-    // int H_max = int(H/err);
-    // int R_max = int(R/err);
-    // int a_max = int(a/err);
 
-    // for (int i_z = 0; i_z<= a_max; i_z++){
-    //     for (int i_y = -a_max/2; i_y<= a_max/2; i_y++){
-    //         for (int i_x = -a_max/2; i_x <= a_max/2; i_x++){
-    //             for (int i_r = 0; i_r<= R_max; i_r++){
-    //                 for (int i_fi = 0; i_fi< int(2*M_PI/err); i_fi++){
-    //                     for (int i_h = 0; i_h<= H_max; i_h++){
-    //                         F.push_point(dist(i_x, i_y, i_z, i_r, i_fi, i_h));    
-    //                     };
-    //                 };
-    //             };
-    //         };
-    //     };
-    // };
+    //BruteForceMethod(0.1, &dist, &F, H, R, a);    
 
     //Метод Монте-Карло - перебираем только часть точек
     std::uniform_real_distribution<double> unif(0,1);   //ГПСЧ
