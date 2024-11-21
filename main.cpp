@@ -93,8 +93,8 @@ void BruteForceMethod(double delita, distance* dist, histogram* F, double H, dou
 
 int main(){
     //Создаём наш функтор и распределение
-    distance dist = distance(50.0, 1.3);
-    histogram F = histogram(70.0, 20.0, 0.01);  
+    distance dist = distance(50.0, 0);
+    histogram F = histogram(80.0, 20.0, 1.0);  
 
     double H = 10;
     double R = 10;
@@ -124,7 +124,7 @@ int main(){
 
     //Вывод результата
     std::ofstream f;
-    f.open("Data");
+    f.open("Data_0");
     int * data = F.gatData();
     for (int i =0 ; i< F.getN(); i++){
         f << data[i] << std::endl;
