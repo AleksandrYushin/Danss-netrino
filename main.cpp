@@ -50,14 +50,14 @@ class histogram{
 
     void push_point(double x){
         if (x < x_max && x > x_min){
-            int n = int(x/(x_max-x_min) *N);
+            int n = int((x-x_min)/(x_max-x_min) *N);
             data[n]++;
         };
     };
 
     double operator()(double x){
         if (x < x_max && x > x_min){
-            int n = int(x/(x_max-x_min) *N);
+            int n = int((x-x_min)/(x_max-x_min) *N);
             return data[n];
         }
         return 0;
@@ -93,12 +93,12 @@ void BruteForceMethod(double delita, distance* dist, histogram* F, double H, dou
 
 int main(){
     //Создаём наш функтор и распределение
-    distance dist = distance(50.0, 0.0);
+    distance dist = distance(50.0, 1.3);
     histogram F = histogram(70.0, 20.0, 0.01);  
 
     double H = 10;
     double R = 10;
-    double a = 20;
+    double a = 25;
 
     //BruteForceMethod(0.1, &dist, &F, H, R, a);    
 
