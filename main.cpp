@@ -30,9 +30,9 @@ class distance{
 // Класс гистограммы. x_max - верхяя граница интервала значений (x_min = 0 по умолчанию), N - число бинов.
 class histogram{
     public:
-    histogram(double x_max, int N): x_max(x_max), N(N) {data = new int[N];};
-    histogram(double x_max, double err): x_max(x_max) {
-        N = int(x_max/err); //err - требуемая max ошибка округления при заполнении гистограммы. Из него получаем N.
+    histogram(double x_max, double x_min, int N): x_max(x_max), x_min(x_min), N(N) {data = new int[N];};
+    histogram(double x_max, double x_min, double err): x_max(x_max), x_min(x_min) {
+        N = int((x_max-x_min)/err); //err - требуемая max ошибка округления при заполнении гистограммы. Из него получаем N.
         data = new int[N];
     };
     ~histogram(){
@@ -40,26 +40,32 @@ class histogram{
     };
 
     void setX_max(double a){x_max = a;};
+    void setX_min(double a){x_min = a;};
     void setN(int a){N = a;};
 
     double getX_max(){return x_max;};
+    double getX_min(){return x_min;};
     int getN(){return N;};
     int* gatData() {return data;};
 
     void push_point(double x){
-        if (x < x_max){
-            int n = int(x/x_max *N);
+        if (x < x_max && x > x_min){
+            int n = int(x/(x_max-x_min) *N);
             data[n]++;
         };
     };
 
     double operator()(double x){
-        int n = int(x/x_max *N);
-        return data[n];
+        if (x < x_max && x > x_min){
+            int n = int(x/(x_max-x_min) *N);
+            return data[n];
+        }
+        return 0;
     };
 
     private:
     double x_max;
+    double x_min;
     int N;
     int *data;
 };
@@ -87,8 +93,8 @@ void BruteForceMethod(double delita, distance* dist, histogram* F, double H, dou
 
 int main(){
     //Создаём наш функтор и распределение
-    distance dist = distance(30.0, 0.0);
-    histogram F = histogram(60.0, 0.1);  
+    distance dist = distance(50.0, 0.0);
+    histogram F = histogram(70.0, 20.0, 0.01);  
 
     double H = 10;
     double R = 10;
@@ -101,8 +107,8 @@ int main(){
     std::default_random_engine re;
 
     /*Математика: вопрос в том, что мы считаем равномерным распределением. Варианты:
-        1) равномерно по r и fi (тогда в центре "плотнее")
-        2) равномерно по площадям (т.е. для любого интегрирования по равновеликим фигурам даёт одно и тоже число) => равномерно по fi и r^2/2 (так как ds=rdr* dfi)
+        1) равномерно по h, r и fi (тогда в центре "плотнее")
+        2) равномерно по объёму (т.е. для любого интегрирования по равновеликим фигурам даёт одно и тоже число) => равномерно по h, fi и r^2/2 (так как ds=rdr* dfi)
     Я склонен выбирать второй вариант*/ 
 
     for (int i = 0; i< 100000; i++){
@@ -124,6 +130,9 @@ int main(){
         f << data[i] << std::endl;
     };
     f.close();
+
+    //Фитироваие
+
 
     return 1;
 };
