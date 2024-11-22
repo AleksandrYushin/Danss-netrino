@@ -3,6 +3,7 @@
 #include <iostream>
 #include <random>
 #include <fstream>
+#include <string>
 
 //Функтор возращающий растояние между точкой детектора (x,y,z) и точкой реактора (r, phi, h)
 /*Модель: реактор - цилиндр с высотой H и радиусом R (координаты точки - цилиндрические от центра основания)
@@ -91,27 +92,12 @@ void BruteForceMethod(double delita, distance* dist, histogram* F, double H, dou
     };
 };
 
-int main(){
-    //Создаём наш функтор и распределение
-    distance dist = distance(50.0, 0);
-    histogram F = histogram(80.0, 20.0, 1.0);  
-
-    double H = 10;
-    double R = 10;
-    double a = 25;
-
-    //BruteForceMethod(0.1, &dist, &F, H, R, a);    
-
+void MonteKarloMethod(int N, distance* dist, histogram* F, double H, double R, double a){
     //Метод Монте-Карло - перебираем только часть точек
     std::uniform_real_distribution<double> unif(0,1);   //ГПСЧ
     std::default_random_engine re;
 
-    /*Математика: вопрос в том, что мы считаем равномерным распределением. Варианты:
-        1) равномерно по h, r и fi (тогда в центре "плотнее")
-        2) равномерно по объёму (т.е. для любого интегрирования по равновеликим фигурам даёт одно и тоже число) => равномерно по h, fi и r^2/2 (так как ds=rdr* dfi)
-    Я склонен выбирать второй вариант*/ 
-
-    for (int i = 0; i< 100000; i++){
+    for (int i = 0; i< N; i++){
         double r_x = unif(re)*a - a/2;
         double r_y = unif(re)*a - a/2;
         double r_z = unif(re)*a;
@@ -119,19 +105,33 @@ int main(){
         double r_phi = unif(re)*2*M_PI;
         double r_h = unif(re)*H;
 
-        F.push_point(dist(r_x, r_y, r_z, r_r, r_phi, r_h));  
+        F->push_point(dist->operator()(r_x, r_y, r_z, r_r, r_phi, r_h));  
     };
+};
 
-    //Вывод результата
-    std::ofstream f;
-    f.open("Data_0");
-    int * data = F.gatData();
-    for (int i =0 ; i< F.getN(); i++){
-        f << data[i] << std::endl;
-    };
-    f.close();
+int main(){
+    for (int i=0; i<100; i+=10){
+        //Создаём наш функтор и распределение
+        distance dist = distance(float(i), 0);
+        histogram F = histogram(90.0, 10.0, 1.0);  
 
-    //Фитироваие
+        double H = 10;
+        double R = 10;
+        double a = 25;
+
+        //BruteForceMethod(0.1, &dist, &F, H, R, a); 
+        MonteKarloMethod(1000000, &dist, &F, H, R, a);    
+
+
+        //Вывод результата
+        std::ofstream f;
+        f.open("Data_L="+std::to_string(i));
+        int * data = F.gatData();
+        for (int i =0 ; i< F.getN(); i++){
+            f << data[i] << std::endl;
+        };
+        f.close();
+        };
 
 
     return 1;
