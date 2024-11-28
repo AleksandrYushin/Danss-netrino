@@ -110,10 +110,10 @@ void MonteKarloMethod(int N, distance* dist, histogram* F, double H, double R, d
 };
 
 int main(){
-    for (int i=50; i<100; i+=5){
+    for (int i=0; i<2; i+=1){
         //Создаём наш функтор и распределение
-        distance dist = distance(float(i), 0);
-        histogram F = histogram(90.0, 10.0, 1.0);  
+        distance dist = distance(100.0, 0);
+        histogram F = histogram(140.0, 10.0, 0.1);  
 
         double H = 10;
         double R = 10;
@@ -125,7 +125,7 @@ int main(){
 
         //Вывод результата
         std::ofstream f;
-        f.open("Data_L="+std::to_string(i));
+        f.open("Data"+std::to_string(i)); //std::to_string(i)
         int * data = F.gatData();
         f << "parameters:" << std::endl;
         f << "H = " << H << std::endl;
