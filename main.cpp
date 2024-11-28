@@ -80,10 +80,10 @@ void BruteForceMethod(double delita, distance* dist, histogram* F, double H, dou
     for (int i_z = 0; i_z<= a_max; i_z++){
         for (int i_y = -a_max/2; i_y<= a_max/2; i_y++){
             for (int i_x = -a_max/2; i_x <= a_max/2; i_x++){
-                for (int i_r = 0; i_r<= R_max; i_r++){
+                for (int i_r = 0; i_r<= R_max*R_max; i_r++){
                     for (int i_phi = 0; i_phi< int(2*M_PI/delita); i_phi++){
                         for (int i_h = 0; i_h<= H_max; i_h++){
-                            F->push_point(dist->operator()(i_x, i_y, i_z, i_r, i_phi, i_h));    
+                            F->push_point(dist->operator()(i_x, i_y, i_z, std::sqrt(i_r), i_phi, i_h));    
                         };
                     };
                 };
@@ -110,39 +110,36 @@ void MonteKarloMethod(int N, distance* dist, histogram* F, double H, double R, d
 };
 
 int main(){
-    for (int i=0; i<2; i+=1){
-        //Создаём наш функтор и распределение
-        distance dist = distance(100.0, 0);
-        histogram F = histogram(140.0, 10.0, 0.1);  
+    //Создаём наш функтор и распределение
+    distance dist = distance(10.0, 0);
+    histogram F = histogram(15.0, 5.0, 0.01);  
 
-        double H = 10;
-        double R = 10;
-        double a = 25;
+    double H = 2;
+    double R = 2;
+    double a = 1;
 
-        //BruteForceMethod(0.1, &dist, &F, H, R, a); 
-        MonteKarloMethod(1000000, &dist, &F, H, R, a);    
+    // BruteForceMethod(0.001, &dist, &F, H, R, a); 
+    MonteKarloMethod(100000000, &dist, &F, H, R, a);    
 
 
-        //Вывод результата
-        std::ofstream f;
-        f.open("Data"+std::to_string(i)); //std::to_string(i)
-        int * data = F.gatData();
-        f << "parameters:" << std::endl;
-        f << "H = " << H << std::endl;
-        f << "R = " << R << std::endl;
-        f << "a = " << a << std::endl;
-        f << "L = " << dist.getL() << std::endl;
-        f << "theta = " << dist.getTheta() << std::endl;
-        f << "x max/min = " << F.getX_max() << " " << F.getX_min() << std::endl;
-        double err = (F.getX_max() - F.getX_min() )/F.getN();
-        f << "err = " << err << std::endl;
-        f << "data:" << std::endl;
-        for (int i =0 ; i< F.getN(); i++){
-            f << data[i] << std::endl;
-        };
-        f.close();
-        };
-
+    //Вывод результата
+    std::ofstream f;
+    f.open("Data_end"); //std::to_string(i)
+    int * data = F.gatData();
+    f << "#parameters:" << std::endl;
+    f << "#H = " << H << std::endl;
+    f << "#R = " << R << std::endl;
+    f << "#a = " << a << std::endl;
+    f << "#L = " << dist.getL() << std::endl;
+    f << "#theta = " << dist.getTheta() << std::endl;
+    f << "#x max/min = " << F.getX_max() << " " << F.getX_min() << std::endl;
+    double err = (F.getX_max() - F.getX_min() )/F.getN();
+    f << "#err = " << err << std::endl;
+    f << "#data:" << std::endl;
+    for (int i =0 ; i< F.getN(); i++){
+        f << data[i] << std::endl;
+    };
+    f.close();
 
     return 1;
 };
