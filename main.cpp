@@ -55,6 +55,13 @@ class histogram{
             data[n]++;
         };
     };
+    
+    int get_sum(){
+        int sum = 0;
+        for (int k = 0; k<N; k++)
+            sum+=data[k];
+        return sum;
+    }
 
     double operator()(double x){
         if (x < x_max && x > x_min){
@@ -119,7 +126,7 @@ int main(){
     double a = 1;
 
     // BruteForceMethod(0.001, &dist, &F, H, R, a); 
-    MonteKarloMethod(100000000, &dist, &F, H, R, a);    
+    MonteKarloMethod(1000000, &dist, &F, H, R, a);    
 
 
     //Вывод результата
@@ -135,6 +142,7 @@ int main(){
     f << "#x max/min = " << F.getX_max() << " " << F.getX_min() << std::endl;
     double err = (F.getX_max() - F.getX_min() )/F.getN();
     f << "#err = " << err << std::endl;
+    f << "#sum = " << F.get_sum() << std::endl;
     f << "#data:" << std::endl;
     for (int i =0 ; i< F.getN(); i++){
         f << data[i] << std::endl;
